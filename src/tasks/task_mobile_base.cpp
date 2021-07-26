@@ -73,16 +73,16 @@ namespace kimmhqp
 
     void TaskMobileEquality::Kp(ConstRefVector Kp)
     {
-      assert(Kp.size()==3);
-      m_Kp.head(3) = Kp;
-      m_Kp.tail(3) = Kp;
+      //assert(Kp.size()==3);
+      m_Kp.head(3) = Kp.head(3);
+      m_Kp.tail(3) = Kp.head(3);
     }
 
     void TaskMobileEquality::Kd(ConstRefVector Kd)
     {
-      assert(Kd.size()==3);
-      m_Kd.head(3) = Kd;
-      m_Kd.tail(3) = Kd;
+      //assert(Kd.size()==3);
+      m_Kd.head(3) = Kd.head(3);
+      m_Kd.tail(3) = Kd.head(3);
     }
 
     void TaskMobileEquality::setReference(TrajectorySample & ref)

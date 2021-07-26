@@ -315,7 +315,7 @@ bool InverseDynamicsFormulationAccForce::removeTask(const std::string & taskName
 {
 #ifndef NDEBUG
   bool taskFound = removeFromHqpData(taskName);
-  assert(taskFound);
+  //assert(taskFound);
 #else
   removeFromHqpData(taskName);
 #endif
