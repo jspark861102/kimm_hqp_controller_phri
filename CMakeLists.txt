@@ -8,25 +8,21 @@ SET(CXX_DISABLE_WERROR TRUE)
 SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 SET(PROJECT_USE_CMAKE_EXPORT TRUE)
 
-INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/boost.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/ide.cmake)
 INCLUDE(cmake/apple.cmake)
 
-COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
-PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
+find_package(catkin REQUIRED)
+catkin_package(
+ INCLUDE_DIRS include
+ LIBRARIES ${PROJECT_NAME}
+ CATKIN_DEPENDS kimm_qpoases kimm_trajectory_smoother
+ DEPENDS system_lib
+)
+
+include_directories(include )
 ADD_DEFINITIONS(-DEIGEN_RUNTIME_NO_MALLOC)
-
-ADD_PROJECT_DEPENDENCY(pinocchio 2.3.1 REQUIRED)
-ADD_PROJECT_DEPENDENCY(eiquadprog 1.1.3 REQUIRED)
-ADD_PROJECT_DEPENDENCY(kimm_qpoases REQUIRED)
-ADD_PROJECT_DEPENDENCY(kimm_trajectory_smoother REQUIRED)
-
-FINDPYTHON(3.6 EXACT REQUIRED)
-SET(PYWRAP ${PROJECT_NAME}_pywrap)
-ADD_PROJECT_DEPENDENCY(eigenpy REQUIRED)
-SEARCH_FOR_BOOST_PYTHON(REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
@@ -93,18 +89,6 @@ SET(${PROJECT_NAME}_FORMULATIONS_HEADERS
   include/kimm_hqp_controller/formulation/contact_level.hpp
   include/kimm_hqp_controller/formulation/inverse_dynamics_formulation_base.hpp
   include/kimm_hqp_controller/formulation/inverse_dynamics_formulation_acc.hpp
-  )
-
-FILE(GLOB ${PYWRAP}_HEADERS
-  include/kimm_hqp_controller/bindings/python/fwd.hpp
-  include/kimm_hqp_controller/bindings/python/constraint/*.hpp
-  # include/kimm_hqp_controller/bindings/python/contacts/*.hpp
-  include/kimm_hqp_controller/bindings/python/formulation/*.hpp
-  include/kimm_hqp_controller/bindings/python/robot/*.hpp
-  include/kimm_hqp_controller/bindings/python/solver/*.hpp
-  include/kimm_hqp_controller/bindings/python/tasks/*.hpp
-  include/kimm_hqp_controller/bindings/python/trajectory/*.hpp
-  # include/kimm_hqp_controller/bindings/python/utils/*.hpp
   )
 
 SET(${PROJECT_NAME}_HEADERS
@@ -190,10 +174,6 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include> $
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC
   pinocchio::pinocchio eiquadprog::eiquadprog ${kimm_trajectory_smoother_libs} ${kimm_qpoases_smoother_libs})
 
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
-INSTALL(TARGETS ${PROJECT_NAME} EXPORT ${TARGETS_EXPORT_NAME} DESTINATION lib)
+#SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
 
-ADD_SUBDIRECTORY(bindings)
-
-INSTALL(FILES package.xml DESTINATION share/${PROJECT_NAME})
 

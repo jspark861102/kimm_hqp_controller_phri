@@ -17,12 +17,14 @@
   <depend>pinocchio</depend>
   <depend>eiquadprog</depend>
   <depend>eigenpy</depend>
+   <depend>kimm_trajectory_smoother</depend>
+    <depend>kimm_qpoases</depend>
   <depend>boost</depend>
   <depend>graphviz</depend>
 
-  <buildtool_depend>cmake</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
 
   <export>
-    <build_type>cmake</build_type>
+    <build_type>catkin</build_type>
   </export>
 </package>
