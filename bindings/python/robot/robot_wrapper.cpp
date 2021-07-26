@@ -1,5 +1,5 @@
-#include "kimm_hqp/bindings/python/robot/expose_robot.hpp"
-#include "kimm_hqp/bindings/python/robot/robot_wrapper.hpp"
+#include "kimm_hqp_controller/bindings/python/robot/expose_robot.hpp"
+#include "kimm_hqp_controller/bindings/python/robot/robot_wrapper.hpp"
 
 namespace kimmhqp
 {

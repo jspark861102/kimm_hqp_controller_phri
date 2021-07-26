@@ -1,6 +1,6 @@
 
-#include "kimm_hqp/bindings/python/formulation/expose_formulation.hpp"
-#include "kimm_hqp/bindings/python/formulation/formulation.hpp"
+#include "kimm_hqp_controller/bindings/python/formulation/expose_formulation.hpp"
+#include "kimm_hqp_controller/bindings/python/formulation/formulation.hpp"
 
 namespace kimmhqp
 {

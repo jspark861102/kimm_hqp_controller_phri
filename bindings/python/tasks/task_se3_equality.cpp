@@ -1,5 +1,5 @@
-#include "kimm_hqp/bindings/python/tasks/task_se3_equality.hpp"
-#include "kimm_hqp/bindings/python/tasks/expose_tasks.hpp"
+#include "kimm_hqp_controller/bindings/python/tasks/task_se3_equality.hpp"
+#include "kimm_hqp_controller/bindings/python/tasks/expose_tasks.hpp"
 
 namespace kimmhqp
 {

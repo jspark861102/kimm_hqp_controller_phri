@@ -1,6 +1,6 @@
 
-#include "kimm_hqp/bindings/python/solver/expose_solver.hpp"
-#include "kimm_hqp/bindings/python/solver/HQPData.hpp"
+#include "kimm_hqp_controller/bindings/python/solver/expose_solver.hpp"
+#include "kimm_hqp_controller/bindings/python/solver/HQPData.hpp"
 
 namespace kimmhqp
 {

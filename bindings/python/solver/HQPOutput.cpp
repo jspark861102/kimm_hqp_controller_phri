@@ -1,5 +1,5 @@
-#include "kimm_hqp/bindings/python/solver/expose_solver.hpp"
-#include "kimm_hqp/bindings/python/solver/HQPOutput.hpp"
+#include "kimm_hqp_controller/bindings/python/solver/expose_solver.hpp"
+#include "kimm_hqp_controller/bindings/python/solver/HQPOutput.hpp"
 
 namespace kimmhqp
 {

@@ -1,10 +1,10 @@
 
-#ifndef __kimm_hqp_python_expose_tasks_hpp__
-#define __kimm_hqp_python_expose_tasks_hpp__
+#ifndef __kimm_hqp_controller_python_expose_tasks_hpp__
+#define __kimm_hqp_controller_python_expose_tasks_hpp__
 
-#include "kimm_hqp/bindings/python/tasks/task_se3_equality.hpp"
-#include "kimm_hqp/bindings/python/tasks/task_joint_posture.hpp"
-#include "kimm_hqp/bindings/python/tasks/task_joint_bound.hpp"
+#include "kimm_hqp_controller/bindings/python/tasks/task_se3_equality.hpp"
+#include "kimm_hqp_controller/bindings/python/tasks/task_joint_posture.hpp"
+#include "kimm_hqp_controller/bindings/python/tasks/task_joint_bound.hpp"
 
 namespace kimmhqp
 {
@@ -22,5 +22,5 @@ namespace kimmhqp
     }
     
   } // namespace python
-} // namespace kimm_hqp
-#endif // ifndef __kimm_hqp_python_expose_tasks_hpp__
+} // namespace kimm_hqp_controller
+#endif // ifndef __kimm_hqp_controller_python_expose_tasks_hpp__

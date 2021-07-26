@@ -1,13 +1,13 @@
-#ifndef __kimm_hqp_controller_controller_python_solver_quadprog_hpp__
-#define __kimm_hqp_controller_controller_python_solver_quadprog_hpp__
+#ifndef __kimm_hqp_controller_python_solver_quadprog_hpp__
+#define __kimm_hqp_controller_python_solver_quadprog_hpp__
 
-#include "kimm_hqp_controller_controller/bindings/python/fwd.hpp"
+#include "kimm_hqp_controller/bindings/python/fwd.hpp"
 
-#include "kimm_hqp_controller_controller/solver/solver_HQP_eiquadprog.hpp"
-#include "kimm_hqp_controller_controller/solver/solver_HQP_eiquadprog_fast.hpp"
-#include "kimm_hqp_controller_controller/solver/solver_HQP_output.hpp"
-#include "kimm_hqp_controller_controller/solver/fwd.hpp"
-#include "kimm_hqp_controller_controller/bindings/python/util/container.hpp"
+#include "kimm_hqp_controller/solver/solver_HQP_eiquadprog.hpp"
+#include "kimm_hqp_controller/solver/solver_HQP_eiquadprog_fast.hpp"
+#include "kimm_hqp_controller/solver/solver_HQP_output.hpp"
+#include "kimm_hqp_controller/solver/fwd.hpp"
+#include "kimm_hqp_controller/bindings/python/util/container.hpp"
 
 namespace kimmhqp
 {
@@ -64,4 +64,4 @@ namespace kimmhqp
 }
 
 
-#endif // ifndef __kimm_hqp_controller_controller_python_solver_quadprog_hpp__
+#endif // ifndef __kimm_hqp_controller_python_solver_quadprog_hpp__

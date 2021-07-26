@@ -1,6 +1,6 @@
 
-#include "kimm_hqp/bindings/python/trajectory/trajectory_euclidian.hpp"
-#include "kimm_hqp/bindings/python/trajectory/expose_trajectory.hpp"
+#include "kimm_hqp_controller/bindings/python/trajectory/trajectory_euclidian.hpp"
+#include "kimm_hqp_controller/bindings/python/trajectory/expose_trajectory.hpp"
 
 namespace kimmhqp
 {
