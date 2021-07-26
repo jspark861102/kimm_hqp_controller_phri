@@ -1,0 +1,31 @@
+INCLUDE(../../cmake/boost.cmake)
+INCLUDE(../../cmake/python.cmake)
+
+FILE(GLOB ${PYWRAP}_SOURCES
+  *.cpp
+  constraint/*.cpp
+  contacts/*.cpp
+  formulation/*.cpp
+  robot/*.cpp
+  solver/*.cpp
+  tasks/*.cpp
+  trajectory/*.cpp
+  )
+
+ADD_LIBRARY(${PYWRAP} SHARED ${${PYWRAP}_SOURCES} ${${PYWRAP}_HEADERS})
+TARGET_LINK_LIBRARIES(${PYWRAP} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+TARGET_LINK_BOOST_PYTHON(${PYWRAP} PRIVATE)
+
+ADD_SOURCE_GROUP(${PYWRAP}_SOURCES)
+
+SET_TARGET_PROPERTIES(${PYWRAP} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME})
+
+INSTALL(TARGETS ${PYWRAP} EXPORT ${TARGETS_EXPORT_NAME} DESTINATION ${PYTHON_SITELIB}/${PROJECT_NAME})
+
+SET(PYTHON_FILES
+  __init__.py
+  )
+
+FOREACH(python ${PYTHON_FILES})
+  PYTHON_INSTALL_ON_SITE(${PROJECT_NAME} ${python})
+ENDFOREACH(python)
