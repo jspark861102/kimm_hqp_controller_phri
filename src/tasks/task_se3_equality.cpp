@@ -53,6 +53,8 @@ namespace kimmhqp
         m_local_frame = false;
       else
         m_local_frame = true;
+
+      m_wholebody = true;
     }
 
     void TaskSE3Equality::setMask(math::ConstRefVector mask)
@@ -214,7 +216,9 @@ namespace kimmhqp
       m_v_ref_vec = m_v_ref.toVector();
       m_v = v_frame.toVector();
 
-      
+      if (!m_wholebody){
+        m_J.topLeftCorner(6, 2).setZero();
+      }
       int idx = 0;
       
       for (int i = 0; i < 6; i++) {

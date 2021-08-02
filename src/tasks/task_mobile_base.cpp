@@ -14,12 +14,14 @@ namespace kimmhqp
 
     TaskMobileEquality::TaskMobileEquality(const std::string & name,
                                      RobotWrapper & robot,
-                                     const bool & isorictrl):
+                                     const bool & isorictrl,
+                                     unsigned int index):
       TaskMotion(name, robot),
       m_constraint(name, 3, robot.nv()-3),
       m_ref(12, 6),
       m_ori_ctrl(isorictrl),
-      m_mobile(robot.ismobile())
+      m_mobile(robot.ismobile()),
+      m_index(index)
     {
       m_v_ref.setZero();
       m_a_ref.setZero();
@@ -45,7 +47,7 @@ namespace kimmhqp
       setMask(m_mask);
 
       if (m_mobile)
-        m_local_frame = true;
+        m_local_frame = false;
       else
         m_local_frame = true;
     }
@@ -158,13 +160,11 @@ namespace kimmhqp
       Motion v_frame;
       Index m_frame_id = m_robot.model().getFrameId("panda_joint1");
       
-      m_robot.framePosition(data, m_frame_id, oMi);
-      m_robot.frameVelocity(data, m_frame_id, v_frame);
-      m_robot.frameClassicAcceleration(data, m_frame_id, m_drift);
+      m_robot.getMobilePosition(data, m_index, m_frame_id, oMi);
+      m_robot.getMobileVelocity(data, m_index, m_frame_id, v_frame);
+      m_robot.getMobileClassicAcceleration(data, m_index, m_frame_id, m_drift);
       
-      // cout << "omI" << oMi << endl;
-      // cout << "ref" << m_M_ref << endl;
-      m_robot.frameJacobianLocal(data, m_frame_id, m_J); // 6 by 9 (for husky with single franka arm)
+      m_robot.getMobileJacobianLocal(data, m_index, m_frame_id, m_J); // 6 by 9 (for husky with single franka arm)
       m_J.topRightCorner(6, 7).setZero();
 
       errorInSE3(oMi, m_M_ref, m_p_error);          // pos err in local frame

@@ -38,6 +38,7 @@ namespace kimmhqp{
 
         void RobotWrapper::computeAllTerms(Data & data, const Eigen::VectorXd & q, const Eigen::VectorXd & v) 
         {
+            m_q = q;
             pinocchio::computeAllTerms(m_model, data, q, v);
             data.M.triangularView<Eigen::StrictlyLower>()
                     = data.M.transpose().triangularView<Eigen::StrictlyLower>();

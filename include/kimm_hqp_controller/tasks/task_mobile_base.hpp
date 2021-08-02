@@ -28,7 +28,8 @@ namespace kimmhqp
 
       TaskMobileEquality(const std::string & name,
                       RobotWrapper & robot,
-                      const bool & isorictrl);
+                      const bool & isorictrl,
+                      unsigned int index = 5);
 
       int dim() const;
 
@@ -90,7 +91,7 @@ namespace kimmhqp
     protected:
 
       bool m_ori_ctrl;
-
+      unsigned int m_index;
       Motion m_p_error, m_v_error;
       Vector m_p_error_vec, m_v_error_vec;
       Vector m_p_error_masked_vec, m_v_error_masked_vec;

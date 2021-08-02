@@ -77,6 +77,9 @@ namespace kimmhqp
       const Vector & Kd() const;
       void Kp(ConstRefVector Kp);
       void Kd(ConstRefVector Kp);
+      void setWholebody(const bool & whole) {
+        m_wholebody = whole;
+      }
 
       Index frame_id() const;
 
@@ -121,6 +124,7 @@ namespace kimmhqp
       TrajectorySample m_ref;
       bool m_local_frame;
       bool m_mobile;
+      bool m_wholebody;
     };
 
   }

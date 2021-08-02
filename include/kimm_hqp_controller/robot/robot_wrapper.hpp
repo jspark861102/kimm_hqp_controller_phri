@@ -90,6 +90,76 @@ namespace kimmhqp{
                     c_ = r_ / (2.0 * b_);
                 }
 
+                SE3 getMobilePosition(const Data & data, unsigned int q_index, std::string name = "panda_joint1"){
+                    Eigen::Matrix3d rot_j1;
+                    rot_j1.setZero();
+                    rot_j1(0, 0) = cos(m_q(q_index));
+                    rot_j1(0, 1) = sin(m_q(q_index));
+                    rot_j1(1, 0) = -sin(m_q(q_index));
+                    rot_j1(1, 1) = cos(m_q(q_index));
+                    rot_j1(2, 2) = 1.0;
+
+                    SE3 oMi = this->position(data, m_model.getJointId(name));
+                    oMi.rotation() = rot_j1 * oMi.rotation();
+                    //oMi.translation() = rot_j1 * oMi.translation();
+                    return oMi;                     
+                }
+                void getMobilePosition(const Data & data, unsigned int q_index, const Model::FrameIndex index, SE3 & framePosition) const {
+                    Eigen::Matrix3d rot_j1;
+                    rot_j1.setZero();
+                    rot_j1(0, 0) = cos(m_q(q_index));
+                    rot_j1(0, 1) = sin(m_q(q_index));
+                    rot_j1(1, 0) = -sin(m_q(q_index));
+                    rot_j1(1, 1) = cos(m_q(q_index));
+                    rot_j1(2, 2) = 1.0;
+
+                    this->framePosition(data, index, framePosition);
+                    framePosition.rotation() = rot_j1 * framePosition.rotation();
+               
+                }
+                void getMobileVelocity(const Data & data, unsigned int q_index, const Model::FrameIndex index, Motion & v_frame) const {
+                    Eigen::Matrix3d rot_j1;
+                    rot_j1.setZero();
+                    rot_j1(0, 0) = cos(m_q(q_index));
+                    rot_j1(0, 1) = sin(m_q(q_index));
+                    rot_j1(1, 0) = -sin(m_q(q_index));
+                    rot_j1(1, 1) = cos(m_q(q_index));
+                    rot_j1(2, 2) = 1.0;
+
+                    this->frameVelocity(data, index, v_frame);
+                   // v_frame.linear() = rot_j1 * v_frame.linear();
+                    //v_frame.angular() = rot_j1 * v_frame.angular();
+                }
+
+                void getMobileClassicAcceleration(const Data & data, unsigned int q_index, const Model::FrameIndex index, Motion & frameAcceleration) const{
+                    Eigen::Matrix3d rot_j1;
+                    rot_j1.setZero();
+                    rot_j1(0, 0) = cos(m_q(q_index));
+                    rot_j1(0, 1) = sin(m_q(q_index));
+                    rot_j1(1, 0) = -sin(m_q(q_index));
+                    rot_j1(1, 1) = cos(m_q(q_index));
+                    rot_j1(2, 2) = 1.0;
+
+                    this->frameClassicAcceleration(data, index, frameAcceleration);
+                    //frameAcceleration.linear() = rot_j1 * frameAcceleration.linear();
+                    //frameAcceleration.angular() = rot_j1 * frameAcceleration.angular();
+                }
+
+                void getMobileJacobianLocal(Data & data, unsigned int q_index, const Model::FrameIndex index, Data::Matrix6x & J) {
+                    Eigen::MatrixXd rot_j1(6, 6);
+                    rot_j1.setZero();
+                    rot_j1(0, 0) = cos(m_q(q_index));
+                    rot_j1(0, 1) = sin(m_q(q_index));
+                    rot_j1(1, 0) = -sin(m_q(q_index));
+                    rot_j1(1, 1) = cos(m_q(q_index));
+                    rot_j1(2, 2) = 1.0;
+                    rot_j1.bottomRightCorner(3,3) = rot_j1.topLeftCorner(3, 3);
+                    rot_j1.topLeftCorner(3, 3).setIdentity();
+
+                    this->frameJacobianLocal(data, index, J);
+                    //J = rot_j1 * J;
+                }
+
             protected:
                 bool mobile_flag_;
                 Model m_model;
@@ -100,6 +170,7 @@ namespace kimmhqp{
                 Eigen::MatrixXd m_S, m_S_dot;
                 Matrix6d m_Rot;
                 double r_, b_, d_, c_; 
+                Eigen::VectorXd m_q;
  
                 
         };
