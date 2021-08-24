@@ -61,7 +61,7 @@ int main(int argc, char **argv){
     postureTask_->Kd(2.0*postureTask_->Kp().cwiseSqrt());
 
     torqueBoundsTask_ = std::make_shared<TaskTorqueBounds>("task-torque-bounds", *robot_);
-    Vector dq_max = 0.1*Vector::Ones(na);
+    Vector dq_max = 0.01*Vector::Ones(na);
     Vector dq_min = -dq_max;
     torqueBoundsTask_->setTorqueBounds(dq_min, dq_max);
 
@@ -89,8 +89,7 @@ int main(int argc, char **argv){
         if (i == 0){
             tsid_->addMotionTask(*postureTask_, 1e-2, 2);
             tsid_->addMotionTask(*torqueBoundsTask_, 1.0, 0);
-            
-            
+                        
             // Set Desired Posture
             trajPosture->clearWaypoints();
             trajPosture->setStartTime(time_);
@@ -119,6 +118,7 @@ int main(int argc, char **argv){
             sampleEE = trajEE->computeNext();
             eeTask_->setReference(sampleEE);
         }
+
         const WHQPData & WHQPData = tsid_->computeProblemData(time_, q_, v_);
         Eigen::VectorXd dv = solver->solve(WHQPData).x;
         v_ += dt*dv;

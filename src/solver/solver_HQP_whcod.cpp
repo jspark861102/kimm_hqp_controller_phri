@@ -122,11 +122,9 @@ const HQPOutput & SolverHQPWhcod::solve(const WHQPData & problemData)
   // }
 
   m_initset->set_btype(m_btype);
-  //cout << x_opt.transpose() << endl;
-
-  m_iHQP->initialized(m_A, m_b, m_btype, m_initset->getactiveset(), m_initset->getbounds());  
-  // cout << " hi" << endl;
+  m_iHQP->initialized(m_A, m_b, m_btype, m_initset->getactiveset(), m_initset->getbounds(), m_W);  
   m_output.x = m_iHQP->solve();
+
   
   // cout << "t" << m_output.x.transpose() << endl;
   // getchar();
