@@ -60,7 +60,7 @@ int main(int argc, char **argv){
     postureTask_->Kd(2.0*postureTask_->Kp().cwiseSqrt());
 
     torqueBoundsTask_ = std::make_shared<TaskTorqueBounds>("task-torque-bounds", *robot_);
-    Vector dq_max = 0.01*Vector::Ones(na);
+    Vector dq_max = 0.1*Vector::Ones(na);
     Vector dq_min = -dq_max;
     torqueBoundsTask_->setTorqueBounds(dq_min, dq_max);
 
@@ -99,8 +99,10 @@ int main(int argc, char **argv){
         q_ = pinocchio::integrate(model, q_, dt*v_);
 
         time_ += dt;
-        cout << "time " << time_ << endl;
-        cout << "joint " << q_.transpose() << endl;
+        if (i%500 == 0){
+            cout << "time " << time_ << endl;
+            cout << "joint " << q_.transpose() << endl;
+        }
     }
 
     return 0;
