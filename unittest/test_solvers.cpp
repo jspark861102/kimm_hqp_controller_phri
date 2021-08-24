@@ -32,6 +32,7 @@ std::shared_ptr<RobotWrapper> robot_;
 std::shared_ptr<InverseDynamicsFormulationWeightedAccForce> tsid_;
 std::shared_ptr<TaskJointPosture> postureTask_;
 std::shared_ptr<TaskTorqueBounds> torqueBoundsTask_;
+std::shared_ptr<TaskSE3Equality> eeTask_;
 
 VectorXd q_, v_;
 double time_;
@@ -64,13 +65,23 @@ int main(int argc, char **argv){
     Vector dq_min = -dq_max;
     torqueBoundsTask_->setTorqueBounds(dq_min, dq_max);
 
+    eeTask_ = std::make_shared<TaskSE3Equality>("task-se3", *robot_, "panda_joint7");
+    eeTask_->Kp(5000.0*Vector::Ones(6));
+    eeTask_->Kd(2.0*eeTask_->Kp().cwiseSqrt());    
+
     VectorXd Maxvel = Vector::Ones(na);
     VectorXd Maxacc = Vector::Ones(na);
     auto trajPosture = std::make_shared<TrajectoryEuclidianTimeopt>("traj_posture", Maxvel, Maxacc);
     TrajectorySample samplePosture(na);
 
+    Vector3d Maxvel_ee = Vector3d::Ones()*0.2;
+    Vector3d Maxacc_ee = Vector3d::Ones()*0.2;
+    auto trajEE = std::make_shared<TrajectorySE3Timeopt>("traj_ee", Maxvel_ee, Maxacc_ee);
+    TrajectorySample sampleEE(12, 6);
+
     //Solver
     SolverHQPBase * solver = SolverHQPFactory::createNewSolver(SOLVER_HQP_WHCOD, "whcod");
+    SE3 H_ee_ref;
 
     int max_it = 5000;
     double dt = 0.001;
@@ -78,7 +89,8 @@ int main(int argc, char **argv){
         if (i == 0){
             tsid_->addMotionTask(*postureTask_, 1e-2, 2);
             tsid_->addMotionTask(*torqueBoundsTask_, 1.0, 0);
-
+            
+            
             // Set Desired Posture
             trajPosture->clearWaypoints();
             trajPosture->setStartTime(time_);
@@ -86,13 +98,27 @@ int main(int argc, char **argv){
             Vector q_ref(7);
             q_ref.setOnes();
             trajPosture->addWaypoint(q_ref); //first add point
+        }
 
+        if (i == 1000){
+            tsid_->addMotionTask(*eeTask_, 1, 1);
+            trajEE->clearWaypoints();
+            trajEE->setStartTime(time_);
+            H_ee_ref = robot_->position(data, robot_->model().getJointId("panda_joint7"));
+            trajEE->addWaypoint(H_ee_ref);
+            H_ee_ref.translation()(0) += 0.10;
+            trajEE->addWaypoint(H_ee_ref);
         }
 
         trajPosture->setCurrentTime(time_);            
         samplePosture = trajPosture->computeNext();       
         postureTask_->setReference(samplePosture);
         
+        if (i>=1000){
+            trajEE->setCurrentTime(time_);
+            sampleEE = trajEE->computeNext();
+            eeTask_->setReference(sampleEE);
+        }
         const WHQPData & WHQPData = tsid_->computeProblemData(time_, q_, v_);
         Eigen::VectorXd dv = solver->solve(WHQPData).x;
         v_ += dt*dv;

@@ -57,7 +57,7 @@ const HQPOutput & SolverHQPWhcod::solve(const WHQPData & problemData)
   m_b.clear();
   m_W.clear();
   m_btype.clear();
-  
+
   m_A.resize(r_level);
   m_b.resize(r_level);
   m_W.resize(r_level);
@@ -114,22 +114,22 @@ const HQPOutput & SolverHQPWhcod::solve(const WHQPData & problemData)
     }
   }
 
-  for (int i=0; i<r_level; i++){
-    cout << "m_A " << i << " " <<  m_A[i] << endl;
-    cout << "m_b" << i <<  " " << m_b[i] << endl;
-    cout << "m_btype" << i  << " " << m_btype[i].transpose() << endl;
-    cout << "m_W" << i  << " " << m_W[i] << endl;
-  }
+  // for (int i=0; i<r_level; i++){
+  //   cout << "m_A " << i << " " <<  m_A[i] << endl;
+  //   cout << "m_b" << i <<  " " << m_b[i] << endl;
+  //   cout << "m_btype" << i  << " " << m_btype[i].transpose() << endl;
+  //   cout << "m_W" << i  << " " << m_W[i] << endl;
+  // }
 
   m_initset->set_btype(m_btype);
   //cout << x_opt.transpose() << endl;
 
-  m_iHQP->initialized(m_A, m_b, m_btype, m_initset->getactiveset(), m_initset->getbounds(), m_W);  
+  m_iHQP->initialized(m_A, m_b, m_btype, m_initset->getactiveset(), m_initset->getbounds());  
   // cout << " hi" << endl;
   m_output.x = m_iHQP->solve();
   
-  cout << "t" << m_output.x.transpose() << endl;
-  getchar();
+  // cout << "t" << m_output.x.transpose() << endl;
+  // getchar();
   return m_output;
 }
 
