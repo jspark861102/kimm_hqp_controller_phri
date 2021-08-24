@@ -17,8 +17,8 @@ namespace kimmhqp{
   , m_robot(robot)
   , m_verbose(verbose)
   {}
-  bool InverseDynamicsFormulationBase::addRigidContact(ContactBase & contact)
-  {
-    return addRigidContact(contact, 1e-5);
-  }
+  // bool InverseDynamicsFormulationBase::addRigidContact(ContactBase & contact)
+  // {
+  //   return addRigidContact(contact, 1e-5);
+  // }
 }

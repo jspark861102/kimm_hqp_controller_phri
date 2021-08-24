@@ -33,6 +33,8 @@ namespace kimmhqp{
              */
             virtual const HQPOutput & solve(const HQPData & problemData) = 0;
 
+            virtual const HQPOutput & solve(const WHQPData & problemData) = 0;
+
             /** Get the objective value of the last solved problem. */
             virtual double getObjectiveValue() = 0;
 

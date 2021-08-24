@@ -1,5 +1,4 @@
 #include "kimm_hqp_controller/formulation/inverse_dynamics_formulation_acc.hpp"
-#include "kimm_hqp_controller/solver/util.hpp"
 
 using namespace kimmhqp;
 using namespace kimmhqp::math;

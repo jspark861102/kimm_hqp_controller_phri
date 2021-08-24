@@ -7,6 +7,7 @@
 #include "kimm_hqp_controller/solver/solver_HQP_base.hpp"
 #include "kimm_hqp_controller/contact/contact_base.hpp"
 #include "kimm_hqp_controller/tasks/task_contact_force.hpp"
+//#include "kimm_hqp_controller/solver/util.hpp"
 
 #include <string>
 
@@ -52,44 +53,44 @@ namespace kimmhqp{
 
         InverseDynamicsFormulationBase(const std::string & name, RobotWrapper & robot, bool verbose=false);
 
-        virtual Data & data() = 0;
+        // virtual Data & data() = 0;
 
-        virtual unsigned int nVar() const = 0;
-        virtual unsigned int nEq() const = 0;
-        virtual unsigned int nIn() const = 0;
+        // virtual unsigned int nVar() const = 0;
+        // virtual unsigned int nEq() const = 0;
+        // virtual unsigned int nIn() const = 0;
 
-        virtual bool addMotionTask(TaskMotion & task, double weight, unsigned int priorityLevel, double transition_duration=0.0) = 0;
+        // virtual bool addMotionTask(TaskMotion & task, double weight, unsigned int priorityLevel, double transition_duration=0.0) = 0;
 
-        virtual bool updateTaskWeight(const std::string & task_name, double weight) = 0;
+        // virtual bool updateTaskWeight(const std::string & task_name, double weight) = 0;
 
-        virtual bool removeTask(const std::string & taskName, double transition_duration=0.0) = 0;
-
-
-        virtual const HQPData & computeProblemData(double time, ConstRefVector q, ConstRefVector v) = 0;
-
-        virtual const Vector & getAccelerations(const HQPOutput & sol) = 0;
-
-        // 
-        virtual bool addForceTask(TaskContactForce & task,
-                              double weight,
-                              unsigned int priorityLevel,
-                              double transition_duration=0.0) = 0;
-
-        virtual bool addRigidContact(ContactBase & contact);
-
-        virtual bool addRigidContact(ContactBase & contact, double force_regularization_weight,
-                                 double motion_weight=1.0, unsigned int motion_priority_level=0) = 0;
+        // virtual bool removeTask(const std::string & taskName, double transition_duration=0.0) = 0;
 
 
-        virtual bool updateRigidContactWeights(const std::string & contact_name,
-                                           double force_regularization_weight,
-                                           double motion_weight=-1.0) = 0;
+        // virtual const HQPData & computeProblemData(double time, ConstRefVector q, ConstRefVector v) = 0;
 
-        virtual bool removeRigidContact(const std::string & contactName,
-                                    double transition_duration=0.0) = 0;
+        // virtual const Vector & getAccelerations(const HQPOutput & sol) = 0;
 
-        virtual const Vector & getContactForces(const HQPOutput & sol) = 0;
-        virtual bool getContactForces(const std::string & name, const HQPOutput & sol, RefVector f) = 0;
+        // // 
+        // virtual bool addForceTask(TaskContactForce & task,
+        //                       double weight,
+        //                       unsigned int priorityLevel,
+        //                       double transition_duration=0.0) = 0;
+
+        // virtual bool addRigidContact(ContactBase & contact);
+
+        // virtual bool addRigidContact(ContactBase & contact, double force_regularization_weight,
+        //                          double motion_weight=1.0, unsigned int motion_priority_level=0) = 0;
+
+
+        // virtual bool updateRigidContactWeights(const std::string & contact_name,
+        //                                    double force_regularization_weight,
+        //                                    double motion_weight=-1.0) = 0;
+
+        // virtual bool removeRigidContact(const std::string & contactName,
+        //                             double transition_duration=0.0) = 0;
+
+        // virtual const Vector & getContactForces(const HQPOutput & sol) = 0;
+        // virtual bool getContactForces(const std::string & name, const HQPOutput & sol, RefVector f) = 0;
 
     protected:
         std::string m_name;

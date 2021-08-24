@@ -28,7 +28,8 @@ namespace kimmhqp
 
       TaskSE3Equality(const std::string & name,
                       RobotWrapper & robot,
-                      const std::string & frameName);
+                      const std::string & frameName,
+                      const Eigen::Vector3d & offset = Eigen::Vector3d(0, 0, 0));
 
       int dim() const;
 
@@ -125,6 +126,7 @@ namespace kimmhqp
       bool m_local_frame;
       bool m_mobile;
       bool m_wholebody;
+      Eigen::Vector3d m_offset;
     };
 
   }

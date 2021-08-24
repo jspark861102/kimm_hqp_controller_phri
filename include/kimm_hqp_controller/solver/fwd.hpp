@@ -16,7 +16,8 @@ namespace kimmhqp{
             SOLVER_HQP_EIQUADPROG = 0,
             SOLVER_HQP_EIQUADPROG_FAST = 1,
             SOLVER_HQP_EIQUADPROG_RT = 2,
-            SOLVER_HQP_QPOASES = 3
+            SOLVER_HQP_QPOASES = 3,
+            SOLVER_HQP_WHCOD = 4
             
         };
         enum TSID_DLLAPI HQPStatus
@@ -59,6 +60,13 @@ namespace kimmhqp{
         typedef pinocchio::container::aligned_vector< aligned_pair<double, std::shared_ptr<const math::ConstraintBase> > > ConstConstraintLevel;
         typedef pinocchio::container::aligned_vector<ConstraintLevel> HQPData;
         typedef pinocchio::container::aligned_vector<ConstConstraintLevel> ConstHQPData;
+
+        typedef pinocchio::container::aligned_vector< aligned_pair<Eigen::VectorXd, std::shared_ptr<math::ConstraintBase> > > WConstraintLevel;
+        typedef pinocchio::container::aligned_vector< aligned_pair<Eigen::VectorXd, std::shared_ptr<const math::ConstraintBase> > > ConstWConstraintLevel;
+        typedef pinocchio::container::aligned_vector<WConstraintLevel> WHQPData;
+        typedef pinocchio::container::aligned_vector<ConstWConstraintLevel> ConstWHQPData;
+
+
     }
 }
 

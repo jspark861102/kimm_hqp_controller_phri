@@ -2,7 +2,7 @@
 #include "kimm_hqp_controller/solver/solver_HQP_eiquadprog.hpp"
 #include "kimm_hqp_controller/solver/solver_HQP_eiquadprog_fast.hpp"
 #include "kimm_hqp_controller/solver/solver_HQP_qpoases.hpp"
-
+#include "kimm_hqp_controller/solver/solver_HQP_whcod.hpp"
 namespace kimmhqp
 {
   namespace solver
@@ -17,7 +17,9 @@ namespace kimmhqp
 
       if(solverType==SOLVER_HQP_QPOASES)
         return new SolverHQPoases(name);
-      
+        
+      if(solverType==SOLVER_HQP_WHCOD)
+        return new SolverHQPWhcod(name);
       
       assert(false && "Specified solver type not recognized");
       return NULL;

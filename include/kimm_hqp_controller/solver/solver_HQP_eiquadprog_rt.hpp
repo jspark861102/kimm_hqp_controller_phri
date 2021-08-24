@@ -28,6 +28,9 @@ namespace kimmhqp{
             /** Solve the given Hierarchical Quadratic Program
              */
             const HQPOutput & solve(const HQPData & problemData);
+            const HQPOutput & solve(const WHQPData & problemData){
+                return m_output;
+            };
 
             /** Get the objective value of the last solved problem. */
             double getObjectiveValue();

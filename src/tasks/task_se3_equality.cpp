@@ -14,12 +14,14 @@ namespace kimmhqp
 
     TaskSE3Equality::TaskSE3Equality(const std::string & name,
                                      RobotWrapper & robot,
-                                     const std::string & frameName):
+                                     const std::string & frameName,
+                                     const Eigen::Vector3d & offset):
       TaskMotion(name, robot),
       m_frame_name(frameName),
       m_constraint(name, 6, robot.nv()),
       m_ref(12, 6),
-      m_mobile(robot.ismobile())
+      m_mobile(robot.ismobile()),
+      m_offset(offset)
     {
       assert(m_robot.model().existFrame(frameName));
       m_frame_id = m_robot.model().getFrameId(frameName);
@@ -167,19 +169,51 @@ namespace kimmhqp
                                                     ConstRefVector ,
                                                     Data & data)
     {
-     
-      SE3 oMi;
+      SE3 oMi, oMi_prev;
       Motion v_frame;
-      m_robot.framePosition(data, m_frame_id, oMi);
+      m_robot.framePosition(data, m_frame_id, oMi_prev);
+      SE3 T_offset;
+      T_offset.setIdentity();
+      T_offset.translation(m_offset);
+      
+      using namespace std;
+      oMi = oMi_prev * T_offset;
+
+
       m_robot.frameVelocity(data, m_frame_id, v_frame);
+      Eigen::MatrixXd Adj_mat(6,6);
+      Adj_mat.setIdentity();
+      Eigen::Vector3d offset_local;
+      offset_local = m_offset; //oMi.translation() - oMi_prev.translation();
+
+      Adj_mat(0, 4) = -offset_local(2);
+      Adj_mat(0, 5) = offset_local(1);
+      Adj_mat(1, 3) = offset_local(2);
+      Adj_mat(1, 5) = -offset_local(0);
+      Adj_mat(2, 3) = -offset_local(1);
+      Adj_mat(2, 4) = offset_local(0);
+
+      // Adj_mat.topLeftCorner(3,3) = oMi.rotation();
+      // Adj_mat.bottomRightCorner(3,3) = oMi.rotation();
+      Adj_mat.topRightCorner(3,3) = -Adj_mat.topRightCorner(3,3);
+      
+      v_frame.linear() = v_frame.linear() + Adj_mat.topRightCorner(3,3) * v_frame.angular();
       m_robot.frameClassicAcceleration(data, m_frame_id, m_drift);
+      m_drift.linear() = m_drift.linear() + Adj_mat.topRightCorner(3,3) * m_drift.angular();
 
       // @todo Since Jacobian computation is cheaper in world frame
       // we could do all computations in world frame
       
       m_robot.frameJacobianLocal(data, m_frame_id, m_J); // 6 by 9 (for husky with single franka arm)
+      m_J = Adj_mat * m_J;
 
+      m_M_ref = m_M_ref;
+
+     // cout << m_M_ref << endl;
       errorInSE3(oMi, m_M_ref, m_p_error);          // pos err in local frame
+      
+      m_v_ref.linear() = m_v_ref.linear() + Adj_mat.topRightCorner(3,3) * m_v_ref.angular();
+      m_a_ref.linear() = m_a_ref.linear() + Adj_mat.topRightCorner(3,3) * m_a_ref.angular();
       SE3ToVector(m_M_ref, m_p_ref);
       SE3ToVector(oMi, m_p);
 
@@ -235,54 +269,54 @@ namespace kimmhqp
         
       }
 
-      using namespace Eigen;
-      if (m_mobile){
-        JacobiSVD<Matrix> svd(m_constraint.matrix().block(0, 2, 6, 7), ComputeThinU | ComputeThinV);
+      // using namespace Eigen;
+      // if (m_mobile){
+      //   JacobiSVD<Matrix> svd(m_constraint.matrix().block(0, 2, 6, 7), ComputeThinU | ComputeThinV);
 
-        if (svd.singularValues()[m_constraint.vector().size() - 1] < 0.05){
-          Matrix matrix_pre = m_constraint.matrix();
-          Vector vector_pre = m_constraint.vector();
+      //   if (svd.singularValues()[m_constraint.vector().size() - 1] < 0.05){
+      //     Matrix matrix_pre = m_constraint.matrix();
+      //     Vector vector_pre = m_constraint.vector();
 
-          Matrix matrix_new;
-          Vector vector_new;
+      //     Matrix matrix_new;
+      //     Vector vector_new;
 
-          matrix_new.setZero(matrix_pre.matrix().rows(), matrix_pre.matrix().cols());
-          vector_new.setZero(matrix_pre.matrix().rows());
+      //     matrix_new.setZero(matrix_pre.matrix().rows(), matrix_pre.matrix().cols());
+      //     vector_new.setZero(matrix_pre.matrix().rows());
     
-          matrix_new.topLeftCorner(matrix_pre.matrix().rows()-1, matrix_pre.matrix().cols()) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * matrix_pre;
-          vector_new.head(matrix_pre.matrix().rows()-1) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * vector_pre;
+      //     matrix_new.topLeftCorner(matrix_pre.matrix().rows()-1, matrix_pre.matrix().cols()) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * matrix_pre;
+      //     vector_new.head(matrix_pre.matrix().rows()-1) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * vector_pre;
         
-          matrix_new.bottomLeftCorner(1, matrix_pre.matrix().cols()) = svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * matrix_pre;
-          vector_new.tail(1) = h_factor(svd.singularValues()[m_constraint.vector().size() - 1], 0.05, 0.02) * svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * vector_pre;
+      //     matrix_new.bottomLeftCorner(1, matrix_pre.matrix().cols()) = svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * matrix_pre;
+      //     vector_new.tail(1) = h_factor(svd.singularValues()[m_constraint.vector().size() - 1], 0.05, 0.02) * svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * vector_pre;
 
-          m_constraint.setMatrix(matrix_new);
-          m_constraint.setVector(vector_new);
-        }
-      }
-      else{
-        JacobiSVD<Matrix> svd(m_constraint.matrix(), ComputeThinU | ComputeThinV);
+      //     m_constraint.setMatrix(matrix_new);
+      //     m_constraint.setVector(vector_new);
+      //   }
+      // }
+      // else{
+      //   JacobiSVD<Matrix> svd(m_constraint.matrix(), ComputeThinU | ComputeThinV);
 
-        if (svd.singularValues()[m_constraint.vector().size() - 1] < 0.05){
-          Matrix matrix_pre = m_constraint.matrix();
-          Vector vector_pre = m_constraint.vector();
+      //   if (svd.singularValues()[m_constraint.vector().size() - 1] < 0.05){
+      //     Matrix matrix_pre = m_constraint.matrix();
+      //     Vector vector_pre = m_constraint.vector();
 
-          Matrix matrix_new;
-          Vector vector_new;
+      //     Matrix matrix_new;
+      //     Vector vector_new;
 
-          matrix_new.setZero(matrix_pre.matrix().rows(), matrix_pre.matrix().cols());
-          vector_new.setZero(matrix_pre.matrix().rows());
+      //     matrix_new.setZero(matrix_pre.matrix().rows(), matrix_pre.matrix().cols());
+      //     vector_new.setZero(matrix_pre.matrix().rows());
     
-          matrix_new.topLeftCorner(matrix_pre.matrix().rows()-1, matrix_pre.matrix().cols()) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * matrix_pre;
-          vector_new.head(matrix_pre.matrix().rows()-1) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * vector_pre;
+      //     matrix_new.topLeftCorner(matrix_pre.matrix().rows()-1, matrix_pre.matrix().cols()) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * matrix_pre;
+      //     vector_new.head(matrix_pre.matrix().rows()-1) = svd.matrixU().topLeftCorner(matrix_pre.matrix().rows(), matrix_pre.matrix().rows()-1).transpose() * vector_pre;
         
-          matrix_new.bottomLeftCorner(1, matrix_pre.matrix().cols()) = svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * matrix_pre;
-          vector_new.tail(1) = h_factor(svd.singularValues()[m_constraint.vector().size() - 1], 0.05, 0.02) * svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * vector_pre;
+      //     matrix_new.bottomLeftCorner(1, matrix_pre.matrix().cols()) = svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * matrix_pre;
+      //     vector_new.tail(1) = h_factor(svd.singularValues()[m_constraint.vector().size() - 1], 0.05, 0.02) * svd.matrixU().topRightCorner(matrix_pre.matrix().rows(), 1).transpose() * vector_pre;
 
-          m_constraint.setMatrix(matrix_new);
-          m_constraint.setVector(vector_new);
-        }     
+      //     m_constraint.setMatrix(matrix_new);
+      //     m_constraint.setVector(vector_new);
+      //   }     
        
-      }
+      // }
       
       return m_constraint;
     }

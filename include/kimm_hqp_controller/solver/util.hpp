@@ -1,5 +1,5 @@
-#ifndef __solver_hqp_util_hpp__
-#define __solver_hqp_util_hpp__
+#ifndef __solver_hqp_solver_util_hpp__
+#define __solver_hqp_solver_util_hpp__
 
 #include "kimm_hqp_controller/solver/fwd.hpp"
 #include "kimm_hqp_controller/math/constraint_base.hpp"
