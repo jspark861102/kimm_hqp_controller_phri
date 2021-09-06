@@ -54,6 +54,12 @@ namespace kimmhqp
     {
       return true;
     }
+    const std::vector<Eigen::VectorXd> & TrajectorySE3Constant::getWholeTrajectory(){
+      traj_.clear();
+      traj_.push_back(m_sample.pos);
+      return traj_;
+    }
+
 
     TrajectorySE3Cubic::TrajectorySE3Cubic(const std::string & name)
       :TrajectoryBase(name)
@@ -164,6 +170,21 @@ namespace kimmhqp
       typedef Eigen::Matrix<double, 9, 1> Vector9;
       m_sample.pos.tail<9>() = Eigen::Map<const Vector9>(&ref.rotation()(0), 9);
     }
+
+    const std::vector<Eigen::VectorXd> & TrajectorySE3Cubic::getWholeTrajectory(){
+      traj_.clear();
+      double time = m_stime;
+      while (time <= m_stime + m_duration){
+        this->setCurrentTime(time);
+        this->computeNext();
+        traj_.push_back(m_sample.pos);
+        time += 0.001;
+      }
+
+      return traj_;
+    }
+
+
 
     TrajectorySE3Timeopt::TrajectorySE3Timeopt(const std::string & name)
       :TrajectoryBase(name)
@@ -279,6 +300,19 @@ namespace kimmhqp
       m_sample.pos.head<3>() = ref.translation();
       typedef Eigen::Matrix<double, 9, 1> Vector9;
       m_sample.pos.tail<9>() = Eigen::Map<const Vector9>(&ref.rotation()(0), 9);
+    }
+
+    const std::vector<Eigen::VectorXd> & TrajectorySE3Timeopt::getWholeTrajectory(){
+      traj_.clear();
+      double time = m_stime;
+      while (time <= m_stime + m_duration){
+        this->setCurrentTime(time);
+        this->computeNext();
+        traj_.push_back(m_sample.pos);
+        time += 0.001;
+      }
+
+      return traj_;
     }
   }
 

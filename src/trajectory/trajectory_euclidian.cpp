@@ -49,6 +49,14 @@ namespace kimmhqp
     {
       return true;
     }
+    const std::vector<Eigen::VectorXd> & TrajectoryEuclidianConstant::getWholeTrajectory(){
+      traj_.clear();
+      traj_.push_back(m_sample.pos);
+      return traj_;
+    }
+
+
+
     //// Trj cubic
     TrajectoryEuclidianCubic::TrajectoryEuclidianCubic(const std::string & name)
       :TrajectoryBase(name)
@@ -138,6 +146,20 @@ namespace kimmhqp
         m_sample.vel.setZero(ref.size());
         m_sample.acc.setZero(ref.size());
     }
+    const std::vector<Eigen::VectorXd> & TrajectoryEuclidianCubic::getWholeTrajectory(){
+      traj_.clear();
+      double time = m_stime;
+      while (time <= m_stime + m_duration){
+        this->setCurrentTime(time);
+        this->computeNext();
+        traj_.push_back(m_sample.pos);
+        time += 0.001;
+      }
+
+      return traj_;
+    }
+
+
   TrajectoryEuclidianTimeopt::TrajectoryEuclidianTimeopt(const std::string & name)
       :TrajectoryBase(name)
     {
@@ -234,5 +256,18 @@ namespace kimmhqp
       m_sample.vel.setZero(ref.size());
       m_sample.acc.setZero(ref.size());
     }
+    const std::vector<Eigen::VectorXd> & TrajectoryEuclidianTimeopt::getWholeTrajectory(){
+      traj_.clear();
+      double time = m_stime;
+      while (time <= m_stime + m_duration){
+        this->setCurrentTime(time);
+        this->computeNext();
+        traj_.push_back(m_sample.pos);
+        time += 0.001;
+      }
+
+      return traj_;
+    }
+
   }
 }

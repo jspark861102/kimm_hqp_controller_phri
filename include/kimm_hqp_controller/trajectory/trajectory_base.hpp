@@ -55,6 +55,8 @@ namespace kimmhqp{
 
                 virtual bool has_trajectory_ended() const = 0;
 
+                virtual const std::vector<Eigen::VectorXd> & getWholeTrajectory() = 0;
+
             protected:
                 std::string m_name;
                 TrajectorySample m_sample;

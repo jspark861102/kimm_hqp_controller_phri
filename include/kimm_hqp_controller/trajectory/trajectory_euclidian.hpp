@@ -33,8 +33,11 @@ namespace kimmhqp{
 
                 bool has_trajectory_ended() const;
 
+                const std::vector<Eigen::VectorXd> & getWholeTrajectory();
+
             protected:
                 Vector m_ref;
+                std::vector<Eigen::VectorXd> traj_;
         };
 
         class TrajectoryEuclidianCubic : public TrajectoryBase
@@ -59,11 +62,13 @@ namespace kimmhqp{
 			void setDuration(const double & duration);
 			void setCurrentTime(const double & time);
 			void setStartTime(const double & time);
+            const std::vector<Eigen::VectorXd> & getWholeTrajectory();
 
 		protected:
 			Vector m_ref;
 			Vector m_init, m_goal, m_cubic;
 			double m_duration, m_stime, m_time;
+            std::vector<Eigen::VectorXd> traj_;
 		};
 
         class TrajectoryEuclidianTimeopt : public TrajectoryBase
@@ -90,6 +95,7 @@ namespace kimmhqp{
                 void setStartTime(const double & time);
                 void setMaxVelocity(ConstRefVector MaxVel);
                 void setMaxAcceleration(ConstRefVector MaxAcc);
+                const std::vector<Eigen::VectorXd> & getWholeTrajectory();
 
             protected:
                 Vector m_ref;
@@ -99,6 +105,7 @@ namespace kimmhqp{
                 stdlist_Eigenvec m_waypoints;
                 bool m_calc;
                 Trajectory* m_traj;
+                std::vector<Eigen::VectorXd> traj_;
 
 		};
     }
