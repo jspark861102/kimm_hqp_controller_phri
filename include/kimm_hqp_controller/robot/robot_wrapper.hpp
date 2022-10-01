@@ -19,6 +19,7 @@ namespace kimmhqp{
                 typedef pinocchio::Model Model;
                 typedef pinocchio::Data Data;
                 typedef pinocchio::Motion Motion;
+                typedef pinocchio::Force Force;
                 typedef pinocchio::Frame Frame;
                 typedef pinocchio::SE3 SE3;
                 typedef math::Vector  Vector;
@@ -42,6 +43,8 @@ namespace kimmhqp{
                 Model & model();
 
                 void computeAllTerms(Data & data, const Eigen::VectorXd & q, const Eigen::VectorXd & v);
+
+                void computeAllTerms_ABA(Data & data, const Eigen::VectorXd & q, const Eigen::VectorXd & v, const Eigen::VectorXd & tau);
                 
                 const Eigen::Vector3d & com(const Data & data) const;
 
@@ -55,9 +58,23 @@ namespace kimmhqp{
 
                 const Eigen::MatrixXd & coriolis(const Data & data);
 
+                const Eigen::VectorXd & jointTorques(const Data & data) const;
+
+                const Eigen::VectorXd & jointAcceleration(const Data & data) const; 
+
                 const Motion & velocity(const Data & data, const Model::JointIndex index) const;
 
+                const Motion & velocity_origin(const Data & data, const Model::JointIndex index) const;
+
                 const Motion & acceleration(const Data & data, const Model::JointIndex index) const;
+
+                const Motion & acceleration_origin(const Data & data, const Model::JointIndex index) const;
+
+                const Force & force(const Data & data, const Model::JointIndex index) const;
+
+                const Force & force_origin(const Data & data, const Model::JointIndex index) const;
+                
+                // const Force & force_global(const Data & data, const Model::JointIndex index) const;
 
                 void jacobianWorld(const Data & data, const Model::JointIndex index, Data::Matrix6x & J);
 
@@ -73,11 +90,17 @@ namespace kimmhqp{
 
                 void frameAcceleration(const Data & data, const Model::FrameIndex index, Motion & frameAcceleration) const;
 
+                Force frameForce(const Data & data, const Model::FrameIndex index) const;
+
+                void frameForce(const Data & data, const Model::FrameIndex index, Force & frameForce) const;
+
                 Motion frameClassicAcceleration(const Data & data, const Model::FrameIndex index) const;
 
                 void frameClassicAcceleration(const Data & data, const Model::FrameIndex index, Motion & frameAcceleration) const;
 
                 void frameJacobianLocal(Data & data, const Model::FrameIndex index, Data::Matrix6x & J)  ;
+                
+                void frameJacobianTimeVariationLocal(Data & data, const Model::FrameIndex index, Data::Matrix6x & dJ)  ;
 
                 const bool & ismobile() const {
                     return mobile_flag_;

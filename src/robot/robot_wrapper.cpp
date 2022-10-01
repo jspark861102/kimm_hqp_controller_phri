@@ -7,6 +7,7 @@
 #include <pinocchio/algorithm/jacobian.hpp>
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/centroidal.hpp>
+#include <pinocchio/algorithm/aba.hpp>
 
 using namespace pinocchio;
 using namespace std;
@@ -72,12 +73,50 @@ namespace kimmhqp{
             }
         }
 
-        const Eigen::Vector3d & RobotWrapper::com(const Data & data) const
+        void RobotWrapper::computeAllTerms_ABA(Data & data, const Eigen::VectorXd & q, const Eigen::VectorXd & v, const Eigen::VectorXd & tau) 
         {
-            return data.com[0];
+            m_q = q;
+            pinocchio::computeAllTerms(m_model, data, q, v);
+            data.M.triangularView<Eigen::StrictlyLower>()
+                    = data.M.transpose().triangularView<Eigen::StrictlyLower>();
+            // computeAllTerms does not compute the com acceleration, so we need to call centerOfMass
+            // Check this line, calling with zero acceleration at the last phase compute the CoM acceleration.
+            //      pinocchio::centerOfMass(m_model, data, q,v,false);
+            pinocchio::updateFramePlacements(m_model, data);
+            pinocchio::centerOfMass(m_model, data, q, v, Eigen::VectorXd::Zero(nv()));
+            pinocchio::ccrba(m_model, data, q, v);
+
+            pinocchio::aba(m_model, data, q, v, tau);
+
+            if (mobile_flag_){                
+                double theta = q(2);
+               
+                m_S.bottomRightCorner(this->na(), this->na()).setIdentity();
+                m_S(0, 0) = c_*(b_*cos(theta) - d_*sin(theta));
+                m_S(0, 1) = c_*(b_*cos(theta) + d_*sin(theta));
+                m_S(1, 0) = c_*(b_*sin(theta) + d_*cos(theta));
+                m_S(1, 1) = c_*(b_*sin(theta) - d_*cos(theta));
+
+                m_S(2, 0) = -c_;
+                m_S(2, 1) = c_;
+                m_S(3, 0) = 1.0;
+                m_S(4, 1) = 1.0;
+
+                m_S_dot(0, 0) = c_*(-b_*sin(theta) - d_*cos(theta));
+                m_S_dot(0, 1) = c_*(-b_*sin(theta) + d_*cos(theta));
+                m_S_dot(1, 0) = c_*(b_*cos(theta) - d_*sin(theta));
+                m_S_dot(1, 1) = c_*(b_*cos(theta) + d_*sin(theta));
+
+                m_S_dot *= v(2);
+            }
         }
 
-        Eigen::VectorXd  RobotWrapper::nonLinearEffects(const Data & data) 
+        const Eigen::Vector3d & RobotWrapper::com(const Data & data) const
+        {
+            return data.com[0];            
+        }
+
+        Eigen::VectorXd RobotWrapper::nonLinearEffects(const Data & data) 
         {   
             if (mobile_flag_){
             //    cout << "ori" << data.nle.transpose().tail(7) << endl;
@@ -86,8 +125,39 @@ namespace kimmhqp{
             return data.nle;
         }
 
+        const Eigen::VectorXd & RobotWrapper::jointTorques(const Data & data) const
+        {                        
+            // cout << data.tau.size() << endl;
+            // cout << data.tau[11] << endl;
+            return data.tau;
+        }
+
+        const Eigen::VectorXd & RobotWrapper::jointAcceleration(const Data & data) const
+        {                                    
+            return data.ddq;
+        }
+
+        const Force & RobotWrapper::force(const Data & data, const Model::JointIndex index) const
+        {            
+            assert(index<data.f.size());
+            return data.f[index];
+        }
+
+        const Force & RobotWrapper::force_origin(const Data & data, const Model::JointIndex index) const
+        {            
+            assert(index<data.of.size());
+            return data.of[index];
+        }
+
+        // const Force & RobotWrapper::force_global(const Data & data, const Model::JointIndex index) const
+        // {            
+        //     assert(index<data.f.size());
+        //     return data.oMi[index] * data.f[index];
+        //     // f       = [ (oMi[i]*robot.data.f   [i]).vector           for i in range(NJ) ]; in dcrba.py in pinocchio
+        // }
+
         const SE3 & RobotWrapper::position(const Data & data, const Model::JointIndex index) const
-        {
+        {            
             assert(index<data.oMi.size());
             return data.oMi[index];
         }
@@ -98,10 +168,22 @@ namespace kimmhqp{
             return data.v[index];
         }
 
+        const Motion & RobotWrapper::velocity_origin(const Data & data, const Model::JointIndex index) const
+        {
+            assert(index<data.ov.size());
+            return data.ov[index];
+        }        
+
         const Motion & RobotWrapper::acceleration(const Data & data, const Model::JointIndex index) const
         {
             assert(index<data.a.size());
             return data.a[index];
+        }
+
+        const Motion & RobotWrapper::acceleration_origin(const Data & data, const Model::JointIndex index) const
+        {
+            assert(index<data.oa.size());
+            return data.oa[index];
         }
 
         const Eigen::MatrixXd & RobotWrapper::mass(const Data & data)
@@ -126,13 +208,13 @@ namespace kimmhqp{
 
         void RobotWrapper::jacobianWorld(const Data & data, const Model::JointIndex index, Data::Matrix6x & J) 
         {   
-            Data::Matrix6x J_tmp(6, this->nv());
+            Data::Matrix6x J_tmp(6, this->nv());            
             if (mobile_flag_){
                 assert(index<m_model.frames.size());
                 m_Rot.topLeftCorner(3, 3) = this->position(data, index).rotation();
                 m_Rot.bottomRightCorner(3, 3) = this->position(data, index).rotation();
                 pinocchio::getJointJacobian(m_model, data, index, pinocchio::LOCAL, J_tmp);
-                J = m_Rot * J_tmp;// * m_S;
+                J = m_Rot * J_tmp;// * m_S;                
             }
             else{
                 return pinocchio::getJointJacobian(m_model, data, index, pinocchio::WORLD, J) ;
@@ -157,7 +239,7 @@ namespace kimmhqp{
         {
             assert(index<m_model.frames.size());
             const Frame & f = m_model.frames[index];
-            return f.placement.actInv(data.v[f.parent]);
+            return f.placement.actInv(data.v[f.parent]); 
         }
     
         void RobotWrapper::frameVelocity(const Data & data, const Model::FrameIndex index, Motion & frameVelocity) const
@@ -165,13 +247,14 @@ namespace kimmhqp{
             assert(index<m_model.frames.size());
             const Frame & f = m_model.frames[index];
             frameVelocity = f.placement.actInv(data.v[f.parent]);
+            //if index is "joint_7", framevelocity and data.v[f.parent] is identical because f.placement is identity            
         }
     
         Motion RobotWrapper::frameAcceleration(const Data & data, const Model::FrameIndex index) const
         {
             assert(index<m_model.frames.size());
             const Frame & f = m_model.frames[index];
-            return f.placement.actInv(data.a[f.parent]);
+            return f.placement.actInv(data.a[f.parent]);            
         }
 
         void RobotWrapper::frameAcceleration(const Data & data, const Model::FrameIndex index, Motion & frameAcceleration) const
@@ -179,6 +262,20 @@ namespace kimmhqp{
             assert(index<m_model.frames.size());
             const Frame & f = m_model.frames[index];
             frameAcceleration = f.placement.actInv(data.a[f.parent]);
+        }
+
+        Force RobotWrapper::frameForce(const Data & data, const Model::FrameIndex index) const
+        {
+            assert(index<m_model.frames.size());
+            const Frame & f = m_model.frames[index];
+            return f.placement.actInv(data.f[f.parent]);            
+        }
+
+        void RobotWrapper::frameForce(const Data & data, const Model::FrameIndex index, Force & frameForce) const
+        {
+            assert(index<m_model.frames.size());
+            const Frame & f = m_model.frames[index];
+            frameForce = f.placement.actInv(data.f[f.parent]);
         }
 
         Motion RobotWrapper::frameClassicAcceleration(const Data & data, const Model::FrameIndex index) const
@@ -197,7 +294,7 @@ namespace kimmhqp{
             const Frame & f = m_model.frames[index];
             frameAcceleration = f.placement.actInv(data.a[f.parent]);
             Motion v = f.placement.actInv(data.v[f.parent]);
-            frameAcceleration.linear() += v.angular().cross(v.linear());
+            frameAcceleration.linear() += v.angular().cross(v.linear());            
         }
 
         void RobotWrapper::frameJacobianLocal(Data & data, const Model::FrameIndex index, Data::Matrix6x & J) 
@@ -214,7 +311,18 @@ namespace kimmhqp{
             }
         }
 
+        void RobotWrapper::frameJacobianTimeVariationLocal(Data & data, const Model::FrameIndex index, Data::Matrix6x & dJ) 
+        {
+            Data::Matrix6x dJ_tmp(6, this->nv());
+            assert(index<m_model.frames.size());
 
-
+            if (mobile_flag_){
+                pinocchio::getFrameJacobianTimeVariation(m_model, data, index, pinocchio::LOCAL, dJ_tmp);
+                dJ = dJ_tmp * m_S;
+            }
+            else{
+                return pinocchio::getFrameJacobianTimeVariation(m_model, data, index, pinocchio::LOCAL, dJ) ;
+            }
+        }
     }
 }
