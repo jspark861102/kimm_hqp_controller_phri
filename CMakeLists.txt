@@ -17,7 +17,7 @@ find_package(catkin REQUIRED)
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS kimm_qpoases kimm_trajectory_smoother weighted_hqp
+ CATKIN_DEPENDS kimm_qpoases kimm_trajectory_smoother
  DEPENDS system_lib
 )
 
@@ -30,7 +30,6 @@ find_package(pinocchio REQUIRED)
 find_package(eiquadprog REQUIRED)
 find_package(kimm_qpoases REQUIRED)
 find_package(kimm_trajectory_smoother REQUIRED)
-find_package(weighted_hqp REQUIRED)
 
 # Main Library
 SET(${PROJECT_NAME}_MATH_HEADERS
@@ -79,7 +78,6 @@ SET(${PROJECT_NAME}_SOLVERS_HEADERS
   include/kimm_hqp_controller/solver/solver_HQP_eiquadprog_rt.hxx
   include/kimm_hqp_controller/solver/solver_HQP_eiquadprog_fast.hpp
   include/kimm_hqp_controller/solver/solver_HQP_qpoases.hpp
-  include/kimm_hqp_controller/solver/solver_HQP_whcod.hpp
   )
 
 SET(${PROJECT_NAME}_ROBOTS_HEADERS
@@ -91,7 +89,6 @@ SET(${PROJECT_NAME}_FORMULATIONS_HEADERS
   include/kimm_hqp_controller/formulation/contact_level.hpp
   include/kimm_hqp_controller/formulation/inverse_dynamics_formulation_base.hpp
   include/kimm_hqp_controller/formulation/inverse_dynamics_formulation_acc.hpp
-  include/kimm_hqp_controller/formulation/inverse_dynamics_formulation_weighted_acc.hpp
   )
 
 SET(${PROJECT_NAME}_HEADERS
@@ -143,7 +140,6 @@ SET(${PROJECT_NAME}_SOLVERS_SOURCES
   src/solver/solver_HQP_eiquadprog.cpp
   src/solver/solver_HQP_eiquadprog_fast.cpp
   src/solver/solver_HQP_qpoases.cpp
-  src/solver/solver_HQP_whcod.cpp
   src/solver/util.cpp
   )
 
@@ -155,7 +151,6 @@ SET(${PROJECT_NAME}_FORMULATIONS_SOURCES
   src/formulation/contact_level.cpp
   src/formulation/inverse_dynamics_formulation_base.cpp
   src/formulation/inverse_dynamics_formulation_acc.cpp
-  src/formulation/inverse_dynamics_formulation_weighted_acc.cpp
   )
 
 SET(${PROJECT_NAME}_SOURCES
@@ -177,13 +172,13 @@ SET(CMAKE_BUILD_TYPE "Debug")
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED
   ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include> ${kimm_trajectory_smoother_INCLUDE_DIRS}  ${kimm_qpoases_INCLUDE_DIRS} ${weighted_hqp_INCLUDE_DIRS})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include> ${kimm_trajectory_smoother_INCLUDE_DIRS}  ${kimm_qpoases_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC
-  pinocchio::pinocchio eiquadprog::eiquadprog ${kimm_trajectory_smoother_libs} ${kimm_qpoases_smoother_libs} ${weighted_hqp_LIBRARIES})
+  pinocchio::pinocchio eiquadprog::eiquadprog ${kimm_trajectory_smoother_libs} ${kimm_qpoases_smoother_libs})
 
 
 add_executable(test_solvers unittest/test_solvers.cpp)
-target_link_libraries(test_solvers ${PROJECT_NAME} ${catkin_LIBRARIES} ${kimm_qpoases_LIBRARIES} ${weighted_hqp_LIBRARIES} ${kimm_trajectory_smoother_LIBRARIES} pinocchio::pinocchio pthread)
+target_link_libraries(test_solvers ${PROJECT_NAME} ${catkin_LIBRARIES} ${kimm_qpoases_LIBRARIES} ${kimm_trajectory_smoother_LIBRARIES} pinocchio::pinocchio pthread)
 #SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
 
 

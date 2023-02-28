@@ -4,7 +4,6 @@
 
 #include <kimm_hqp_controller/robot/robot_wrapper.hpp>
 #include <kimm_hqp_controller/formulation/inverse_dynamics_formulation_acc.hpp>
-#include <kimm_hqp_controller/formulation/inverse_dynamics_formulation_weighted_acc.hpp>
 #include <kimm_hqp_controller/tasks/task_se3_equality.hpp>
 #include <kimm_hqp_controller/tasks/task_joint_posture.hpp>
 #include <kimm_hqp_controller/tasks/task_joint_bound.hpp>
@@ -29,7 +28,7 @@ using namespace kimmhqp::robot;
 using namespace std;
 
 std::shared_ptr<RobotWrapper> robot_;
-std::shared_ptr<InverseDynamicsFormulationWeightedAccForce> tsid_;
+std::shared_ptr<InverseDynamicsFormulationAccForce> tsid_;
 std::shared_ptr<TaskJointPosture> postureTask_;
 std::shared_ptr<TaskTorqueBounds> torqueBoundsTask_;
 std::shared_ptr<TaskSE3Equality> eeTask_;
@@ -52,7 +51,7 @@ int main(int argc, char **argv){
     v_.setZero(na);
     time_ = 0;
 
-    tsid_ = std::make_shared<InverseDynamicsFormulationWeightedAccForce>("tsid", *robot_);
+    tsid_ = std::make_shared<InverseDynamicsFormulationAccForce>("tsid", *robot_);
     tsid_->computeProblemData(time_, q_, v_);
     pinocchio::Data & data = tsid_->data();
 
@@ -119,8 +118,8 @@ int main(int argc, char **argv){
             eeTask_->setReference(sampleEE);
         }
 
-        const WHQPData & WHQPData = tsid_->computeProblemData(time_, q_, v_);
-        Eigen::VectorXd dv = solver->solve(WHQPData).x;
+        const HQPData & HQPData = tsid_->computeProblemData(time_, q_, v_);
+        Eigen::VectorXd dv = solver->solve(HQPData).x;
         v_ += dt*dv;
         q_ = pinocchio::integrate(model, q_, dt*v_);
 

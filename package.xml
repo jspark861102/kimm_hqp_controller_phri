@@ -19,7 +19,6 @@
   <depend>eigenpy</depend>
    <depend>kimm_trajectory_smoother</depend>
     <depend>kimm_qpoases</depend>
-    <depend>weighted_hqp</depend>
   <depend>boost</depend>
   <depend>graphviz</depend>
 
