@@ -174,11 +174,10 @@ namespace kimmhqp
       m_robot.framePosition(data, m_frame_id, oMi_prev);
       SE3 T_offset;
       T_offset.setIdentity();
-      T_offset.translation(m_offset);
+      T_offset.translation(m_offset);      
       
       using namespace std;
-      oMi = oMi_prev * T_offset;
-
+      oMi = oMi_prev * T_offset;      
 
       m_robot.frameVelocity(data, m_frame_id, v_frame);
       Eigen::MatrixXd Adj_mat(6,6);
@@ -222,12 +221,12 @@ namespace kimmhqp
 
       if (m_local_frame) {
         m_p_error_vec = m_p_error.toVector();
-        m_v_error =  m_wMl.actInv(m_v_ref) - v_frame;  // vel err in local frame
+        m_v_error =  m_wMl.actInv(m_v_ref) - v_frame;  // vel err in local frame        
 
         // desired acc in local frame
         m_a_des = m_Kp.cwiseProduct(m_p_error_vec)
                   + m_Kd.cwiseProduct(m_v_error.toVector())
-                  + m_wMl.actInv(m_a_ref).toVector();
+                  + m_wMl.actInv(m_a_ref).toVector();              
       } else {
         m_p_error_vec = m_wMl.toActionMatrix() *   // pos err in local world-oriented frame
             m_p_error.toVector();
@@ -253,7 +252,7 @@ namespace kimmhqp
       if (!m_wholebody){
         m_J.topLeftCorner(6, 2).setZero();
       }
-      int idx = 0;
+      int idx = 0;      
       
       for (int i = 0; i < 6; i++) {
         if (m_mask(i) != 1.) continue;

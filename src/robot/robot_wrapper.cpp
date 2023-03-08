@@ -27,6 +27,7 @@ namespace kimmhqp{
                m_Rot.setZero();
                setMobileParam(0.165, 0.5, 0.05);
            }
+        //    cout << m_model << endl;
         }
 
         const Model & RobotWrapper::model() const { return m_model; }
@@ -147,14 +148,7 @@ namespace kimmhqp{
         {            
             assert(index<data.of.size());
             return data.of[index];
-        }
-
-        // const Force & RobotWrapper::force_global(const Data & data, const Model::JointIndex index) const
-        // {            
-        //     assert(index<data.f.size());
-        //     return data.oMi[index] * data.f[index];
-        //     // f       = [ (oMi[i]*robot.data.f   [i]).vector           for i in range(NJ) ]; in dcrba.py in pinocchio
-        // }
+        }        
 
         const SE3 & RobotWrapper::position(const Data & data, const Model::JointIndex index) const
         {            
@@ -239,7 +233,7 @@ namespace kimmhqp{
         {
             assert(index<m_model.frames.size());
             const Frame & f = m_model.frames[index];
-            return f.placement.actInv(data.v[f.parent]); 
+            return f.placement.actInv(data.v[f.parent]);             
         }
     
         void RobotWrapper::frameVelocity(const Data & data, const Model::FrameIndex index, Motion & frameVelocity) const
@@ -247,7 +241,7 @@ namespace kimmhqp{
             assert(index<m_model.frames.size());
             const Frame & f = m_model.frames[index];
             frameVelocity = f.placement.actInv(data.v[f.parent]);
-            //if index is "joint_7", framevelocity and data.v[f.parent] is identical because f.placement is identity            
+            //if index is "joint_7", framevelocity and data.v[f.parent] is identical because f.placement is identity                        
         }
     
         Motion RobotWrapper::frameAcceleration(const Data & data, const Model::FrameIndex index) const

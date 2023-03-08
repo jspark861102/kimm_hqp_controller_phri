@@ -72,9 +72,7 @@ namespace kimmhqp{
 
                 const Force & force(const Data & data, const Model::JointIndex index) const;
 
-                const Force & force_origin(const Data & data, const Model::JointIndex index) const;
-                
-                // const Force & force_global(const Data & data, const Model::JointIndex index) const;
+                const Force & force_origin(const Data & data, const Model::JointIndex index) const;                                
 
                 void jacobianWorld(const Data & data, const Model::JointIndex index, Data::Matrix6x & J);
 
