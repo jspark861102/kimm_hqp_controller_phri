@@ -84,6 +84,8 @@ namespace kimmhqp
 
       Index frame_id() const;
 
+      void setDesiredinertia(Matrix6x Me_inv);
+
       /**
        * @brief Specifies if the jacobian and desired acceloration should be
        * expressed in the local frame or the local world-oriented frame.
@@ -119,14 +121,15 @@ namespace kimmhqp
       Vector m_drift_masked;
       Matrix6x m_mat;
       Vector m_vec;
-      Matrix6x m_J;
-      Matrix6x m_J_rotated;
+      Matrix6x m_J_local;
+      Matrix6x m_J_rotated_to_global;
       ConstraintEquality m_constraint;
       TrajectorySample m_ref;
       bool m_local_frame;
       bool m_mobile;
       bool m_wholebody;
       Eigen::Vector3d m_offset;
+      Matrix6x m_Me_inv;
     };
 
   }

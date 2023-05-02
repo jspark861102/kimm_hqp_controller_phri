@@ -40,8 +40,10 @@ namespace kimmhqp
       m_Kd.setZero(6);
       m_a_des.setZero(6);
      
-      m_J.setZero(6, robot.nv());
-      m_J_rotated.setZero(6, robot.nv());
+      m_J_local.setZero(6, robot.nv());
+      m_J_rotated_to_global.setZero(6, robot.nv());
+
+      m_Me_inv.setIdentity(6,6);
 
       if (m_mobile){
         m_constraint.resize(6, robot.nv()-3);
@@ -64,10 +66,10 @@ namespace kimmhqp
       TaskMotion::setMask(mask);
       int n = dim();
       if (m_mobile){
-        m_constraint.resize(n, (unsigned int)m_J.cols() - 3);
+        m_constraint.resize(n, (unsigned int)m_J_local.cols() - 3);
       }
       else{
-        m_constraint.resize(n, (unsigned int)m_J.cols());
+        m_constraint.resize(n, (unsigned int)m_J_local.cols());
       }
       m_p_error_masked_vec.resize(n);
       m_v_error_masked_vec.resize(n);
@@ -102,6 +104,11 @@ namespace kimmhqp
       vectorToSE3(ref.pos, m_M_ref);
       m_v_ref = Motion(ref.vel);
       m_a_ref = Motion(ref.acc);
+    }
+
+    void TaskSE3Equality::setDesiredinertia(Matrix6x Me_inv)
+    {
+      m_Me_inv = Me_inv;
     }
 
     const TrajectorySample & TaskSE3Equality::getReference() const
@@ -203,31 +210,28 @@ namespace kimmhqp
       // @todo Since Jacobian computation is cheaper in world frame
       // we could do all computations in world frame
       
-      m_robot.frameJacobianLocal(data, m_frame_id, m_J); // 6 by 9 (for husky with single franka arm)
-      m_J = Adj_mat * m_J;
-
-      m_M_ref = m_M_ref;
-
-     // cout << m_M_ref << endl;
-      errorInSE3(oMi, m_M_ref, m_p_error);          // pos err in local frame
+      m_robot.frameJacobianLocal(data, m_frame_id, m_J_local); // 6 by 9 (for husky with single franka arm)
+      m_J_local = Adj_mat * m_J_local;
+      
+      errorInSE3(oMi, m_M_ref, m_p_error);          // pos err in local frame      
       
       m_v_ref.linear() = m_v_ref.linear() + Adj_mat.topRightCorner(3,3) * m_v_ref.angular();
       m_a_ref.linear() = m_a_ref.linear() + Adj_mat.topRightCorner(3,3) * m_a_ref.angular();
       SE3ToVector(m_M_ref, m_p_ref);
       SE3ToVector(oMi, m_p);
-
+      
       // Transformation from local to world
       m_wMl.rotation(oMi.rotation());
 
-      if (m_local_frame) {
-        m_p_error_vec = m_p_error.toVector();
+      if (m_local_frame) { // arm only case, local frame calculation
+        m_p_error_vec = m_p_error.toVector();          // pos err in local frame
         m_v_error =  m_wMl.actInv(m_v_ref) - v_frame;  // vel err in local frame        
 
         // desired acc in local frame
-        m_a_des = m_Kp.cwiseProduct(m_p_error_vec)
-                  + m_Kd.cwiseProduct(m_v_error.toVector())
+        m_a_des =   m_Me_inv * m_Kp.cwiseProduct(m_p_error_vec)
+                  + m_Me_inv * m_Kd.cwiseProduct(m_v_error.toVector())
                   + m_wMl.actInv(m_a_ref).toVector();              
-      } else {
+      } else { // mobile case, global frame calculation
         m_p_error_vec = m_wMl.toActionMatrix() *   // pos err in local world-oriented frame
             m_p_error.toVector();
 
@@ -240,9 +244,9 @@ namespace kimmhqp
                   + m_Kd.cwiseProduct(m_v_error.toVector())
                   + m_a_ref.toVector();
 
-        // Use an explicit temporary `m_J_rotated` here to avoid allocations.
-        m_J_rotated.noalias() = m_wMl.toActionMatrix() * m_J;
-        m_J = m_J_rotated;
+        // Use an explicit temporary `m_J_rotated_to_global` here to avoid allocations.
+        m_J_rotated_to_global.noalias() = m_wMl.toActionMatrix() * m_J_local;
+        m_J_local = m_J_rotated_to_global;
       }
       
       m_v_error_vec = m_v_error.toVector();
@@ -250,14 +254,14 @@ namespace kimmhqp
       m_v = v_frame.toVector();
 
       if (!m_wholebody){
-        m_J.topLeftCorner(6, 2).setZero();
+        m_J_local.topLeftCorner(6, 2).setZero();
       }
       int idx = 0;      
       
       for (int i = 0; i < 6; i++) {
         if (m_mask(i) != 1.) continue;
 
-        m_constraint.matrix().row(idx) = m_J.row(i);
+        m_constraint.matrix().row(idx) = m_J_local.row(i);
         m_constraint.vector().row(idx) = (m_a_des - m_drift.toVector()).row(i);
         m_a_des_masked(idx)            = m_a_des(i);
         m_drift_masked(idx)            = m_drift.toVector()(i);
