@@ -111,6 +111,11 @@ namespace kimmhqp
       m_Me_inv = Me_inv;
     }
 
+    void TaskSE3Equality::setEEoffset(Eigen::Vector3d ee_offset)
+    {
+      m_offset = ee_offset;
+    }
+
     const TrajectorySample & TaskSE3Equality::getReference() const
     {
       return m_ref;
@@ -240,8 +245,8 @@ namespace kimmhqp
         m_drift = m_wMl.act(m_drift);
 
         // desired acc in local world-oriented frame
-        m_a_des = m_Kp.cwiseProduct(m_p_error_vec)
-                  + m_Kd.cwiseProduct(m_v_error.toVector())
+        m_a_des = m_Me_inv * m_Kp.cwiseProduct(m_p_error_vec)
+                  + m_Me_inv * m_Kd.cwiseProduct(m_v_error.toVector())
                   + m_a_ref.toVector();
 
         // Use an explicit temporary `m_J_rotated_to_global` here to avoid allocations.

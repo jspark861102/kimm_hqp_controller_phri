@@ -85,6 +85,7 @@ namespace kimmhqp
       Index frame_id() const;
 
       void setDesiredinertia(Matrix6x Me_inv);
+      void setEEoffset(Eigen::Vector3d ee_offset);
 
       /**
        * @brief Specifies if the jacobian and desired acceloration should be

@@ -79,6 +79,8 @@ namespace kimmhqp
       void Kp(ConstRefVector Kp);
       void Kd(ConstRefVector Kp);
 
+      void setDesiredinertia(Matrix6x Me_inv);
+
        /**
        * @brief Specifies if the jacobian and desired acceloration should be
        * expressed in the local frame or the local world-oriented frame.
@@ -112,6 +114,7 @@ namespace kimmhqp
       TrajectorySample m_ref;
       bool m_local_frame;
       bool m_mobile;
+      Matrix6x m_Me_inv;
     };
 
   }

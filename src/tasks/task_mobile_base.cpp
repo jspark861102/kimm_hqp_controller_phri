@@ -40,6 +40,8 @@ namespace kimmhqp
       m_J.setZero(6, robot.nv()-3);
       m_J_rotated.setZero(6, robot.nv()-3);
 
+      m_Me_inv.setIdentity(6,6);
+
       assert(m_mobile == true);
 
       m_mask.resize(3);
@@ -93,6 +95,11 @@ namespace kimmhqp
       vectorToSE3(ref.pos, m_M_ref);
       m_v_ref = Motion(ref.vel);
       m_a_ref = Motion(ref.acc);
+    }
+
+    void TaskMobileEquality::setDesiredinertia(Matrix6x Me_inv)
+    {
+      m_Me_inv = Me_inv;
     }
 
     const TrajectorySample & TaskMobileEquality::getReference() const
@@ -180,8 +187,8 @@ namespace kimmhqp
         m_v_error =  m_wMl.actInv(m_v_ref) - v_frame;  // vel err in local frame
 
         // desired acc in local frame
-        m_a_des = m_Kp.cwiseProduct(m_p_error_vec)
-                  + m_Kd.cwiseProduct(m_v_error.toVector())
+        m_a_des = m_Me_inv * m_Kp.cwiseProduct(m_p_error_vec)
+                  + m_Me_inv * m_Kd.cwiseProduct(m_v_error.toVector())
                   + m_wMl.actInv(m_a_ref).toVector();
       } 
       else {
@@ -193,8 +200,8 @@ namespace kimmhqp
         m_drift = m_wMl.act(m_drift);
 
         // desired acc in local world-oriented frame
-        m_a_des = m_Kp.cwiseProduct(m_p_error_vec)
-                  + m_Kd.cwiseProduct(m_v_error.toVector())
+        m_a_des = m_Me_inv * m_Kp.cwiseProduct(m_p_error_vec)
+                  + m_Me_inv * m_Kd.cwiseProduct(m_v_error.toVector())
                   + m_a_ref.toVector();
 
         // Use an explicit temporary `m_J_rotated` here to avoid allocations.
